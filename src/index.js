@@ -3,17 +3,10 @@ const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
 const logger = require('./utils/logger')
+const Blog = require('./model/blogs')
 
 const password = process.argv[2]
 
-const blogSchema = new mongoose.Schema({
-    title: String,
-    author: String,
-    url: String,
-    likes: Number
-})
-
-const Blog = mongoose.model('Blog', blogSchema)
 const mongoUrl = process.env.MONGO_URI || `mongodb://fullstackopen:${password}@localhost:27017/bloglist`
 mongoose.connect(mongoUrl)
 
