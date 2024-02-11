@@ -167,3 +167,49 @@ describe('most blogs', () => {
     })
 
 })
+
+describe('most likes', () => {
+
+    test('when list is undefined, expects TypeError', () => {
+        expect(() => listHelper.mostLikes(undefined)).toThrow(TypeError)
+    })
+
+    test('when list is empty, equals {}', () => {
+        const result = listHelper.mostLikes([])
+        expect(result).toEqual({})
+    })
+
+    test('when list has no authors, equals {}', () => {
+        const result = listHelper.mostLikes([{ likes: 9 }, { likes: 1 }])
+        expect(result).toEqual({})
+    })
+
+    test('when list has no likes, equals the first entry', () => {
+        const result = listHelper.mostLikes([{ author: 'Bob' }, { author: 'Alice' }])
+        expect(result).toEqual({
+            author: 'Bob',
+            likes: 0
+        })
+    })
+
+    test('when list is not an array, expects TypeError', () => {
+        expect(() => listHelper.mostLikes(8)).toThrow(TypeError)
+    })
+
+    test('when list has a single blog, equals to that blog', () => {
+        const result = listHelper.mostLikes(listWithOneBlog)
+        expect(result).toEqual({
+            author: listWithOneBlog[0].author,
+            likes: listWithOneBlog[0].likes
+        })
+    })
+
+    test('when list has multiple blogs, equals to the author with the most likes', () => {
+        const result = listHelper.mostLikes(blogs)
+        expect(result).toEqual({
+            author: 'Edsger W. Dijkstra',
+            likes: 17
+        })
+    })
+
+})
