@@ -1,3 +1,6 @@
+const { test, describe } = require('node:test')
+const assert = require('node:assert')
+
 const listHelper = require('../utils/list_helper')
 
 const blogs = [
@@ -66,32 +69,32 @@ test('dummy returns one', () => {
     const blogs = []
 
     const result = listHelper.dummy(blogs)
-    expect(result).toBe(1)
+    assert.strictEqual(result, 1)
 })
 
 describe('total likes', () => {
 
     test('when list is undefined, expects TypeError', () => {
-        expect(() => listHelper.totalLikes(undefined)).toThrow(TypeError)
+        assert.throws(() => listHelper.totalLikes(undefined), TypeError)
     })
 
     test('when list is empty, equals 0', () => {
         const result = listHelper.totalLikes([])
-        expect(result).toBe(0)
+        assert.strictEqual(result, 0)
     })
 
     test('when list is not an array, expects TypeError', () => {
-        expect(() => listHelper.totalLikes(8)).toThrow(TypeError)
+        assert.throws(() => listHelper.totalLikes(8), TypeError)
     })
 
     test('when list has only one blog, equals the likes of that', () => {
         const result = listHelper.totalLikes(listWithOneBlog)
-        expect(result).toBe(5)
+        assert.strictEqual(result, 5)
     })
 
     test('when list has multiple blogs, equals the likes of all the blogs', () => {
         const result = listHelper.totalLikes(blogs)
-        expect(result).toBe(36)
+        assert.strictEqual(result, 36)
     })
 
 })
@@ -99,26 +102,26 @@ describe('total likes', () => {
 describe('favourite blog', () => {
 
     test('when list is undefined, expects TypeError', () => {
-        expect(() => listHelper.favoriteBlog(undefined)).toThrow(TypeError)
+        assert.throws(() => listHelper.favoriteBlog(undefined), TypeError)
     })
 
     test('when list is empty, equals {}', () => {
         const result = listHelper.favoriteBlog([])
-        expect(result).toEqual({})
+        assert.deepStrictEqual(result, {})
     })
 
     test('when list is not an array, expects TypeError', () => {
-        expect(() => listHelper.favoriteBlog(8)).toThrow(TypeError)
+        assert.throws(() => listHelper.favoriteBlog(8), TypeError)
     })
 
     test('when list has a single blog, equals to that blog', () => {
         const result = listHelper.favoriteBlog(listWithOneBlog)
-        expect(result).toEqual(listWithOneBlog[0])
+        assert.deepStrictEqual(result, listWithOneBlog[0])
     })
 
     test('when list has multiple blogs, equals to the one with the most likes', () => {
         const result = listHelper.favoriteBlog(blogs)
-        expect(result).toEqual({
+        assert.deepStrictEqual(result, {
             _id: '5a422b3a1b54a676234d17f9',
             title: 'Canonical string reduction',
             author: 'Edsger W. Dijkstra',
@@ -133,26 +136,26 @@ describe('favourite blog', () => {
 describe('most blogs', () => {
 
     test('when list is undefined, expects TypeError', () => {
-        expect(() => listHelper.mostBlogs(undefined)).toThrow(TypeError)
+        assert.throws(() => listHelper.mostBlogs(undefined), TypeError)
     })
 
     test('when list is empty, equals {}', () => {
         const result = listHelper.mostBlogs([])
-        expect(result).toEqual({})
+        assert.deepStrictEqual(result, {})
     })
 
     test('when list has no authors, equals {}', () => {
         const result = listHelper.mostBlogs([{ likes: 9 }, { likes: 1 }])
-        expect(result).toEqual({})
+        assert.deepStrictEqual(result, {})
     })
 
     test('when list is not an array, expects TypeError', () => {
-        expect(() => listHelper.mostBlogs(8)).toThrow(TypeError)
+        assert.throws(() => listHelper.mostBlogs(8), TypeError)
     })
 
     test('when list has a single blog, equals to that blog', () => {
         const result = listHelper.mostBlogs(listWithOneBlog)
-        expect(result).toEqual({
+        assert.deepStrictEqual(result, {
             author: listWithOneBlog[0].author,
             blogs: 1
         })
@@ -160,7 +163,7 @@ describe('most blogs', () => {
 
     test('when list has multiple blogs, equals to the author with the most blogs', () => {
         const result = listHelper.mostBlogs(blogs)
-        expect(result).toEqual({
+        assert.deepStrictEqual(result, {
             author: 'Robert C. Martin',
             blogs: 3
         })
@@ -171,34 +174,34 @@ describe('most blogs', () => {
 describe('most likes', () => {
 
     test('when list is undefined, expects TypeError', () => {
-        expect(() => listHelper.mostLikes(undefined)).toThrow(TypeError)
+        assert.throws(() => listHelper.mostLikes(undefined), TypeError)
     })
 
     test('when list is empty, equals {}', () => {
         const result = listHelper.mostLikes([])
-        expect(result).toEqual({})
+        assert.deepStrictEqual(result, {})
     })
 
     test('when list has no authors, equals {}', () => {
         const result = listHelper.mostLikes([{ likes: 9 }, { likes: 1 }])
-        expect(result).toEqual({})
+        assert.deepStrictEqual(result, {})
     })
 
     test('when list has no likes, equals the first entry', () => {
         const result = listHelper.mostLikes([{ author: 'Bob' }, { author: 'Alice' }])
-        expect(result).toEqual({
+        assert.deepStrictEqual(result, {
             author: 'Bob',
             likes: 0
         })
     })
 
     test('when list is not an array, expects TypeError', () => {
-        expect(() => listHelper.mostLikes(8)).toThrow(TypeError)
+        assert.throws(() => listHelper.mostLikes(8), TypeError)
     })
 
     test('when list has a single blog, equals to that blog', () => {
         const result = listHelper.mostLikes(listWithOneBlog)
-        expect(result).toEqual({
+        assert.deepStrictEqual(result, {
             author: listWithOneBlog[0].author,
             likes: listWithOneBlog[0].likes
         })
@@ -206,7 +209,7 @@ describe('most likes', () => {
 
     test('when list has multiple blogs, equals to the author with the most likes', () => {
         const result = listHelper.mostLikes(blogs)
-        expect(result).toEqual({
+        assert.deepStrictEqual(result, {
             author: 'Edsger W. Dijkstra',
             likes: 17
         })
