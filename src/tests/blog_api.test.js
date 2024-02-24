@@ -6,7 +6,7 @@ const app = require('../app.js')
 
 const api = supertest(app)
 const Blog = require('../model/blogs')
-const { initialBlogs } = require('./test_helper')
+const { initialBlogs, blogsInDb } = require('./test_helper')
 
 before(async () => {
     await Blog.deleteMany({})
@@ -29,6 +29,29 @@ test('the identification field is id and not _id', async () => {
         assert(b.id)
         assert.strictEqual(b._id, undefined)
     })
+})
+
+test('new blog is created via POST', async () => {
+    const newBlog = {
+        title: 'Test blog',
+        author: 'Jon Doe',
+        url: 'https://www.example.com',
+        likes: 57,
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    const currBlogs = await blogsInDb()
+
+    assert(currBlogs.some(b => {
+        return b.title === newBlog.title &&
+            b.author === newBlog.author &&
+            b.url === newBlog.url &&
+            b.likes === newBlog.likes
+    }))
 })
 
 after(async () => {
