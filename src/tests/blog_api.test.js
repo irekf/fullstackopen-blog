@@ -53,6 +53,27 @@ test('new blog is created via POST', async () => {
             b.likes === newBlog.likes
     }))
 })
+test('new blog with no likes results in 0 likes', async () => {
+    const newBlog = {
+        title: 'Test blog 2',
+        author: 'Joe Doe',
+        url: 'https://www.example.com',
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    const currBlogs = await blogsInDb()
+
+    assert(currBlogs.some(b => {
+        return b.title === newBlog.title &&
+            b.author === newBlog.author &&
+            b.url === newBlog.url &&
+            b.likes === 0
+    }))
+})
 
 after(async () => {
     await mongoose.connection.close()
