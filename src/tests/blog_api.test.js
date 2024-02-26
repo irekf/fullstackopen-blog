@@ -32,6 +32,7 @@ test('the identification field is id and not _id', async () => {
 })
 
 test('new blog is created via POST', async () => {
+
     const newBlog = {
         title: 'Test blog',
         author: 'Jon Doe',
@@ -52,8 +53,10 @@ test('new blog is created via POST', async () => {
             b.url === newBlog.url &&
             b.likes === newBlog.likes
     }))
+
 })
 test('new blog with no likes results in 0 likes', async () => {
+
     const newBlog = {
         title: 'Test blog 2',
         author: 'Joe Doe',
@@ -73,6 +76,35 @@ test('new blog with no likes results in 0 likes', async () => {
             b.url === newBlog.url &&
             b.likes === 0
     }))
+
+})
+
+test('new blog with no title results in 400', async () => {
+
+    const newBlog = {
+        author: 'Alice Doe',
+        url: 'https://www.example.com',
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+})
+
+test('new blog with no url results in 400', async () => {
+
+    const newBlog = {
+        title: 'Test blog 3',
+        author: 'Bob Doe',
+    }
+
+    await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
 })
 
 after(async () => {
