@@ -6,6 +6,15 @@ blogsRouter.get('/', async (request, response) => {
     response.json(blogs)
 })
 
+blogsRouter.get('/:id', async (request, response) => {
+    const blogs = await Blog.findById(request.params.id)
+    if (blogs) {
+        response.json(blogs)
+    } else {
+        response.status(404).json({ error: `Entry not found for ${request.params.id}` })
+    }
+})
+
 blogsRouter.post('/', async (request, response) => {
     const blog = new Blog(request.body)
     const result = await blog.save()
@@ -18,6 +27,18 @@ blogsRouter.delete('/:id', async (request, response) => {
         response.status(204).end()
     } else {
         response.status(404).json({ error: `Entry not found for ${request.params.id}` })
+    }
+})
+
+blogsRouter.put('/:id', async (request, response) => {
+    const id = request.params.id
+    const likes = request.body.likes
+    const result = await Blog.findByIdAndUpdate(id, { likes },
+        { new: true, runValidators: true, context: 'query' })
+    if (result) {
+        response.json(result)
+    } else {
+        response.status(404).json({ error: `Entry not found for id ${id}` })
     }
 })
 
