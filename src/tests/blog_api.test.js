@@ -6,7 +6,7 @@ const app = require('../app.js')
 
 const api = supertest(app)
 const Blog = require('../model/blogs')
-const { initialBlogs, blogsInDb } = require('./test_helper')
+const { initialBlogs, blogsInDb, nonExistingId, badId } = require('./test_helper')
 
 before(async () => {
     await Blog.deleteMany({})
@@ -105,6 +105,36 @@ test('new blog with no url results in 400', async () => {
         .expect(400)
         .expect('Content-Type', /application\/json/)
 
+})
+
+test('delete an existing blog', async () => {
+
+    const newBlog = {
+        title: 'Test blog 4',
+        author: 'Bob White',
+        url: 'https://www.example.com',
+    }
+
+    const postResult = await api.post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+    await api.delete(`/api/blogs/${postResult.body.id}`)
+        .expect(204)
+
+})
+
+test('delete a non-existing blog', async () => {
+    await api.delete(`/api/blogs/${await nonExistingId()}`)
+        .expect(404)
+        .expect('Content-Type', /application\/json/)
+})
+
+test('delete a blog using a bad ID', async () => {
+    await api.delete(`/api/blogs/${badId()}`)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 })
 
 after(async () => {
