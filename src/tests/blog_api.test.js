@@ -5,7 +5,7 @@ const supertest = require('supertest')
 const app = require('../app.js')
 
 const api = supertest(app)
-const Blog = require('../model/blogs')
+const Blog = require('../model/blog')
 const { initialBlogs, blogsInDb, nonExistingId, badId } = require('./test_helper')
 
 before(async () => {
