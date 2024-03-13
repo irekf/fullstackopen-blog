@@ -56,6 +56,59 @@ describe('adding a new user', () => {
 
     })
 
+    test('new user with a name too short', async () => {
+
+        const newUser = {
+            username: 'xy',
+            name: 'John Forest',
+            password: '1234567890',
+        }
+
+        const result = await api.post('/api/users')
+            .send(newUser)
+            .expect(400)
+
+        assert(result.body.error ===
+            'User validation failed: username: Path `username` (`xy`) is shorter than the minimum allowed length (3).')
+
+    })
+
+    test('new user with a password too short', async () => {
+
+        const newUser = {
+            username: 'xyz',
+            name: 'John Forest',
+            password: '12',
+        }
+
+        const result = await api.post('/api/users')
+            .send(newUser)
+            .expect(400)
+
+        assert(result.body.error === 'password too short')
+
+    })
+
+    test('duplicate username', async () => {
+
+        const newUser = {
+            username: 'dupe_user',
+            name: 'John Forest',
+            password: '123',
+        }
+
+        await api.post('/api/users')
+            .send(newUser)
+            .expect(201)
+
+        const result = await api.post('/api/users')
+            .send(newUser)
+            .expect(400)
+
+        assert(result.body.error.startsWith('E11000 duplicate key error collection'))
+
+    })
+
 })
 
 after(async () => {
