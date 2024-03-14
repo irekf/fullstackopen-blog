@@ -37,28 +37,51 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-    const result = await Blog.findByIdAndDelete(request.params.id)
-    if (result) {
-        response.status(204).end()
-    } else {
-        response.status(404).json({ error: `Entry not found for ${request.params.id}` })
-    }
-})
 
-blogsRouter.put('/:id', async (request, response) => {
+    const id = request.params.id
 
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
     if (!decodedToken.id) {
         return response.status(401).json({ error: 'invalid token' })
     }
 
+    const blog = await Blog.findById(id)
+    if (!blog) {
+        response.status(404).json({ error: `Entry not found for ${id}` })
+    }
+
+    if (blog.user.toString() !== decodedToken.id.toString()) {
+        return response.status(401).json({ error: 'not owner' })
+    }
+
+    const result = await blog.deleteOne()
+    if (result) {
+        response.status(204).end()
+    } else {
+        response.status(404).json({ error: `Entry not found for ${id}` })
+    }
+})
+
+blogsRouter.put('/:id', async (request, response) => {
+
     const id = request.params.id
-    if (id !== decodedToken.id) {
+
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
+        return response.status(401).json({ error: 'invalid token' })
+    }
+
+    const blog = await Blog.findById(id)
+    if (!blog) {
+        response.status(404).json({ error: `Entry not found for ${id}` })
+    }
+
+    if (blog.user.toString() !== decodedToken.id.toString()) {
         return response.status(401).json({ error: 'not owner' })
     }
 
     const likes = request.body.likes
-    const result = await Blog.findByIdAndUpdate(id, { likes },
+    const result = await blog.updateOne({ likes },
         { new: true, runValidators: true, context: 'query' })
     if (result) {
         response.json(result)
