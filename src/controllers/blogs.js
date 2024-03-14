@@ -19,18 +19,10 @@ blogsRouter.get('/:id', async (request, response) => {
     }
 })
 
-const extractToken = request => {
-    const authorization = request.get('authorization')
-    if (authorization && authorization.startsWith('Bearer ')) {
-        return authorization.replace('Bearer ', '')
-    }
-    return null
-}
-
 blogsRouter.post('/', async (request, response) => {
 
-    const decodedToken = jwt.verify(extractToken(request), process.env.SECRET)
-    if (!decodedToken || !decodedToken.id) {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
         return response.status(401).json({ error: 'invalid token' })
     }
 
@@ -55,8 +47,8 @@ blogsRouter.delete('/:id', async (request, response) => {
 
 blogsRouter.put('/:id', async (request, response) => {
 
-    const decodedToken = jwt.verify(extractToken(request), process.env.SECRET)
-    if (!decodedToken || !decodedToken.id) {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
         return response.status(401).json({ error: 'invalid token' })
     }
 
