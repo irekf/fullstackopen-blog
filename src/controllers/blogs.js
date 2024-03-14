@@ -1,6 +1,7 @@
 const Blog = require('../model/blog')
 const User = require('../model/user')
 const blogsRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
 
 blogsRouter.get('/', async (request, response) => {
     const blogs = await Blog.find({})
@@ -18,8 +19,22 @@ blogsRouter.get('/:id', async (request, response) => {
     }
 })
 
+const extractToken = request => {
+    const authorization = request.get('authorization')
+    if (authorization && authorization.startsWith('Bearer ')) {
+        return authorization.replace('Bearer ', '')
+    }
+    return null
+}
+
 blogsRouter.post('/', async (request, response) => {
-    const creator = (await User.find({}))[0]
+
+    const decodedToken = jwt.verify(extractToken(request), process.env.SECRET)
+    if (!decodedToken || !decodedToken.id) {
+        return response.status(401).json({ error: 'invalid token' })
+    }
+
+    const creator = await User.findById(decodedToken.id)
     const blog = new Blog({ ...request.body, user: creator })
     const result = await blog.save()
     if (creator) {
@@ -39,7 +54,17 @@ blogsRouter.delete('/:id', async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
+
+    const decodedToken = jwt.verify(extractToken(request), process.env.SECRET)
+    if (!decodedToken || !decodedToken.id) {
+        return response.status(401).json({ error: 'invalid token' })
+    }
+
     const id = request.params.id
+    if (id !== decodedToken.id) {
+        return response.status(401).json({ error: 'not owner' })
+    }
+
     const likes = request.body.likes
     const result = await Blog.findByIdAndUpdate(id, { likes },
         { new: true, runValidators: true, context: 'query' })
