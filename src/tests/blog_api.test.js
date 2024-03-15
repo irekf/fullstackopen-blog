@@ -6,13 +6,29 @@ const app = require('../app.js')
 
 const api = supertest(app)
 const Blog = require('../model/blog')
+const User = require('../model/user')
 const { initialBlogs, blogsInDb, nonExistingId, badId } = require('./test_helper')
 
+let JWT = undefined
+let TEST_USER = { username: 'test_user', name: 'test test', password: 'foobar' }
+
 before(async () => {
+
+    await User.deleteMany({})
+    const newUserResult = await api.post('/api/users')
+        .send(TEST_USER)
+        .expect(201)
+    const loginResult = await api.post('/api/login')
+        .send({ username: 'test_user', password: 'foobar' })
+        .expect(200)
+    JWT = loginResult.body.token
+    TEST_USER.id = newUserResult.body.id
+
     await Blog.deleteMany({})
-    const blogs = initialBlogs.map(b => new Blog(b))
+    const blogs = initialBlogs.map(b => new Blog({ ...b, user: TEST_USER.id }))
     const promises = blogs.map(b => b.save())
     await Promise.all(promises)
+
 })
 
 describe('getting blogs', () => {
@@ -70,6 +86,7 @@ describe('adding a new blog', () => {
         }
 
         await api.post('/api/blogs')
+            .set('Authorization', `Bearer ${JWT}`)
             .send(newBlog)
             .expect(201)
             .expect('Content-Type', /application\/json/)
@@ -94,6 +111,7 @@ describe('adding a new blog', () => {
         }
 
         await api.post('/api/blogs')
+            .set('Authorization', `Bearer ${JWT}`)
             .send(newBlog)
             .expect(201)
             .expect('Content-Type', /application\/json/)
@@ -117,6 +135,7 @@ describe('adding a new blog', () => {
         }
 
         await api.post('/api/blogs')
+            .set('Authorization', `Bearer ${JWT}`)
             .send(newBlog)
             .expect(400)
             .expect('Content-Type', /application\/json/)
@@ -131,6 +150,7 @@ describe('adding a new blog', () => {
         }
 
         await api.post('/api/blogs')
+            .set('Authorization', `Bearer ${JWT}`)
             .send(newBlog)
             .expect(400)
             .expect('Content-Type', /application\/json/)
@@ -147,21 +167,25 @@ describe('deleting blogs', () => {
             title: 'Test blog 4',
             author: 'Bob White',
             url: 'https://www.example.com',
+            user: TEST_USER.id
         }).save()
 
         await api.delete(`/api/blogs/${blog._id.toString()}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .expect(204)
 
     })
 
     test('delete a non-existing blog results in 404', async () => {
         await api.delete(`/api/blogs/${await nonExistingId()}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .expect(404)
             .expect('Content-Type', /application\/json/)
     })
 
     test('delete a blog using a bad ID results in 400', async () => {
         await api.delete(`/api/blogs/${badId()}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .expect(400)
             .expect('Content-Type', /application\/json/)
     })
@@ -176,12 +200,14 @@ describe('updating blogs', () => {
             title: 'Test blog 5',
             author: 'Bob Forest',
             url: 'https://www.example.com',
-            likes: 7
+            likes: 7,
+            user: TEST_USER.id
         }
 
         const newBlogObj = await new Blog(newBlog).save()
 
         const postResult = await api.put(`/api/blogs/${newBlogObj._id.toString()}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .send({ likes: newBlog.likes + 2 })
             .expect(200)
             .expect('Content-Type', /application\/json/)
@@ -194,6 +220,7 @@ describe('updating blogs', () => {
 
     test('update a non-existing blog results in 404', async () => {
         await api.put(`/api/blogs/${await nonExistingId()}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .send({ likes: 2 })
             .expect(404)
             .expect('Content-Type', /application\/json/)
@@ -201,6 +228,7 @@ describe('updating blogs', () => {
 
     test('update a blog with a bad ID results in 400', async () => {
         await api.put(`/api/blogs/${badId()}`)
+            .set('Authorization', `Bearer ${JWT}`)
             .send({ likes: 2 })
             .expect(400)
             .expect('Content-Type', /application\/json/)
