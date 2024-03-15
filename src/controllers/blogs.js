@@ -1,7 +1,7 @@
 const Blog = require('../model/blog')
 const User = require('../model/user')
 const blogsRouter = require('express').Router()
-const jwt = require('jsonwebtoken')
+const middleware = require('../utils/middleware')
 
 blogsRouter.get('/', async (request, response) => {
     const blogs = await Blog.find({})
@@ -19,14 +19,12 @@ blogsRouter.get('/:id', async (request, response) => {
     }
 })
 
-blogsRouter.post('/', async (request, response) => {
+blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
 
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if (!decodedToken.id) {
-        return response.status(401).json({ error: 'invalid token' })
+    const creator = await User.findById(request.user)
+    if (!creator) {
+        response.status(404).json({ error: 'User not found for this blog entry' })
     }
-
-    const creator = await User.findById(decodedToken.id)
     const blog = new Blog({ ...request.body, user: creator })
     const result = await blog.save()
     if (creator) {
@@ -36,21 +34,16 @@ blogsRouter.post('/', async (request, response) => {
     response.status(201).json(result)
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) => {
 
     const id = request.params.id
-
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if (!decodedToken.id) {
-        return response.status(401).json({ error: 'invalid token' })
-    }
 
     const blog = await Blog.findById(id)
     if (!blog) {
         response.status(404).json({ error: `Entry not found for ${id}` })
     }
 
-    if (blog.user.toString() !== decodedToken.id.toString()) {
+    if (blog.user.toString() !== request.user.toString()) {
         return response.status(401).json({ error: 'not owner' })
     }
 
@@ -62,21 +55,16 @@ blogsRouter.delete('/:id', async (request, response) => {
     }
 })
 
-blogsRouter.put('/:id', async (request, response) => {
+blogsRouter.put('/:id', middleware.userExtractor, async (request, response) => {
 
     const id = request.params.id
-
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if (!decodedToken.id) {
-        return response.status(401).json({ error: 'invalid token' })
-    }
 
     const blog = await Blog.findById(id)
     if (!blog) {
         response.status(404).json({ error: `Entry not found for ${id}` })
     }
 
-    if (blog.user.toString() !== decodedToken.id.toString()) {
+    if (blog.user.toString() !== request.user.toString()) {
         return response.status(401).json({ error: 'not owner' })
     }
 
